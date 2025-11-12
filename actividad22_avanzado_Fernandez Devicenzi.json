@@ -1,0 +1,216 @@
+{
+  "name": "Automated Social Media Notification Integration for Web Project Actions",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "web-action-notification",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "ac080add-0495-4c5d-a698-df381ea2f0ca",
+      "name": "Web Project Action Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        320,
+        320
+      ],
+      "webhookId": "ef5d5ef5-7ccb-430d-a039-6d2a69b2fbfe"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "telegramChatId",
+              "value": "<__PLACEHOLDER_VALUE__Your Telegram Chat ID__>",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "slackChannel",
+              "value": "<__PLACEHOLDER_VALUE__Your Slack Channel ID__>",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "whatsappPhoneNumber",
+              "value": "<__PLACEHOLDER_VALUE__WhatsApp Phone Number (e.g., +1234567890)__>",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "actionType",
+              "value": "={{ $json.body.action }}",
+              "type": "string"
+            },
+            {
+              "id": "id-5",
+              "name": "actionData",
+              "value": "={{ JSON.stringify($json.body) }}",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "8f382651-dcf4-45ba-8a72-302c4d6c32bd",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        544,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": false,
+            "leftValue": "",
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.actionType }}",
+              "rightValue": "urgent",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "df5f18e1-0390-4467-b205-f2e24cf39f09",
+      "name": "Check Action Type",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        768,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Workflow Configuration').first().json.telegramChatId }}",
+        "text": "=🚨 *Acción Urgente Completada*\n\n*Tipo:* {{ $json.actionType }}\n*Detalles:* {{ JSON.stringify($json.actionData, null, 2) }}\n*Fecha:* {{ $now.toLocaleString() }}",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "id": "03fadf09-5c3e-4e3d-a949-96fa29cd974f",
+      "name": "Send Telegram Notification",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        992,
+        128
+      ],
+      "webhookId": "33ac7255-a483-44b3-9d7d-9b2a40338f47"
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ $('Workflow Configuration').first().json.slackChannel }}"
+        },
+        "text": "=:white_check_mark: *Acción Completada en Proyecto Web*\n\n*Tipo:* {{ $json.actionType }}\n*Detalles:* ```{{ JSON.stringify($json.actionData, null, 2) }}```\n*Fecha:* {{ $now.toLocaleString() }}",
+        "otherOptions": {}
+      },
+      "id": "4c552cca-16cd-441f-ac8f-7a0d7af27299",
+      "name": "Send Slack Notification",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        992,
+        320
+      ],
+      "webhookId": "467dfc1e-4078-4f0a-ba2d-9cbdcbd1eec7"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "recipientPhoneNumber": "={{ $('Workflow Configuration').first().json.whatsappPhoneNumber }}",
+        "textBody": "=✅ Acción Completada\n\nTipo: {{ $json.actionType }}\nDetalles: {{ JSON.stringify($json.actionData, null, 2) }}\nFecha: {{ $now.toLocaleString() }}",
+        "additionalFields": {}
+      },
+      "id": "9d8747f1-c9c6-4c2a-934a-32c1b28a3d72",
+      "name": "Send WhatsApp Notification",
+      "type": "n8n-nodes-base.whatsApp",
+      "typeVersion": 1.1,
+      "position": [
+        992,
+        512
+      ],
+      "webhookId": "b25fab6c-740c-4301-bebe-fb2e01d15aad"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Web Project Action Webhook": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Check Action Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Action Type": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Notification",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Slack Notification",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send WhatsApp Notification",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9dfe926a-e536-4941-8918-512ead18aa89",
+  "meta": {
+    "instanceId": "90e95ceec774a7bde9f9b2c749ac71482472efbb3dbe71c2892899facba3a41d"
+  },
+  "id": "Z5x6jfl3PLjYHvtg",
+  "tags": []
+}

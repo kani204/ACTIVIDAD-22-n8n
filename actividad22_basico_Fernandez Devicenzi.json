@@ -1,0 +1,151 @@
+{
+  "name": "Web Form Submission to Email and Spreadsheet",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "Formulario de Contacto",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Nombre"
+            },
+            {
+              "fieldLabel": "Correo Electrónico",
+              "fieldType": "email"
+            },
+            {
+              "fieldLabel": "Mensaje",
+              "fieldType": "textarea"
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false,
+          "buttonLabel": "Enviar"
+        }
+      },
+      "id": "9858c099-d649-4b0a-ac6a-af2089cfbd08",
+      "name": "Formulario Web",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.3,
+      "position": [
+        -448,
+        96
+      ],
+      "webhookId": "b9c8cc6d-9598-46c7-aedd-ff24e90048c7"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "emailDestinatario",
+              "value": "<__PLACEHOLDER_VALUE__Correo electrónico del destinatario__>",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "f18f6232-8c18-421d-8360-4277ebab415c",
+      "name": "Configuración del Workflow",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -224,
+        96
+      ]
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Configuración del Workflow').first().json.emailDestinatario }}",
+        "subject": "=Nuevo mensaje de contacto de {{ $json.nombre }}",
+        "message": "=Has recibido un nuevo mensaje de contacto:\n\nNombre: {{ $json.nombre }}\nCorreo: {{ $json.email }}\nMensaje: {{ $json.mensaje }}",
+        "options": {}
+      },
+      "id": "e224ce4f-f8e8-44eb-a73f-8bdad1471e17",
+      "name": "Enviar Correo",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "2c3514bb-2e1d-4619-834d-e55ffa3c33a1"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "<__PLACEHOLDER_VALUE__ID de Google Sheets__>"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "<__PLACEHOLDER_VALUE__Nombre de la hoja__>"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": null,
+          "matchingColumns": [
+            "email"
+          ],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "db4cd373-f49d-4d69-9a95-0278242c082f",
+      "name": "Registrar en Hoja de Cálculo",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        0,
+        192
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Formulario Web": {
+      "main": [
+        [
+          {
+            "node": "Configuración del Workflow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configuración del Workflow": {
+      "main": [
+        [
+          {
+            "node": "Enviar Correo",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Registrar en Hoja de Cálculo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "c9c3a6a8-4b9e-4d3e-8f06-9a8ca1b2b618",
+  "meta": {
+    "instanceId": "90e95ceec774a7bde9f9b2c749ac71482472efbb3dbe71c2892899facba3a41d"
+  },
+  "id": "lZjCtJmogRAza0UQ",
+  "tags": []
+}
